@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGA Accesorios | Equipamiento 4x4 y Mecánica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@300;400;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #080808; color: #fff; }
+        .font-brand { font-family: 'Orbitron', sans-serif; }
+        [x-cloak] { display: none !important; }
+        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-scroll { display: flex; width: 200%; animation: scroll 25s linear infinite; }
+        .hero-bg { background-size: cover; background-position: center; transition: all 0.7s ease-in-out; }
+    </style>
+</head>
+<body x-data="cgaApp()" x-init="init()">
+
+    <div x-show="showPopup" x-cloak class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 text-center">
+        <div class="bg-zinc-900 border-2 border-red-600 p-8 rounded-2xl max-w-md w-full relative shadow-[0_0_50px_rgba(220,38,38,0.3)]">
+            <button @click="showPopup = false" class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-white">&times;</button>
+            <h2 class="text-3xl font-brand italic mb-2 text-red-600 uppercase">CLUB CGA</h2>
+            <p class="text-gray-300 mb-6 font-bold">¡Dejanos tu mail y recibí un descuento exclusivo en tu próximo service o accesorio!</p>
+            <input type="email" placeholder="Tu correo electrónico" class="w-full p-4 rounded bg-black border border-zinc-700 mb-4 focus:border-red-600 outline-none text-white">
+            <button @click="showPopup = false" class="w-full bg-red-600 hover:bg-red-700 py-4 font-black uppercase tracking-widest rounded transition">RECIBIR BENEFICIO</button>
+        </div>
+    </div>
+
+    <nav class="bg-black/95 border-b-2 border-red-600 sticky top-0 z-[100] backdrop-blur-md h-20 flex items-center">
+        <div class="container mx-auto px-4 flex justify-between items-center text-center md:text-left">
+            <a href="#" class="text-2xl md:text-3xl font-brand font-black italic">
+                <span class="text-red-600 uppercase tracking-tighter">CGA</span> <span class="text-white">Accesorios</span>
+            </a>
+            <div class="hidden lg:flex space-x-8 font-extrabold text-[10px] tracking-widest uppercase">
+                <a href="#productos" class="hover:text-red-600 transition">Grupos</a>
+                <a href="#mecanica" class="hover:text-red-600 transition">Mecánica</a>
+                <a href="#performance" class="hover:text-red-600 transition">Performance</a>
+                <a href="#contacto" class="hover:text-red-600 transition">Contacto</a>
+            </div>
+            <button @click="cartOpen = true" class="relative bg-zinc-900 p-3 rounded-lg border border-zinc-700">
+                <i class="fas fa-shopping-cart text-xl"></i>
+                <span x-text="cart.length" class="absolute -top-2 -right-2 bg-red-600 text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <header id="hero" :style="`background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${heroImg});`" class="hero-bg h-[75vh] flex flex-col items-center justify-center text-center px-4">
+        <h2 class="text-5xl md:text-8xl font-brand italic font-black uppercase leading-tight tracking-tighter">POTENCIÁ TU<br><span class="text-red-600">AVENTURA</span></h2>
+        <p class="mt-4 text-lg md:text-xl font-light tracking-[0.3em] text-gray-300">ENVÍOS A TODO EL PAÍS | INSTALACIÓN A DOMICILIO</p>
+    </header>
+
+    <section class="container mx-auto px-4 -mt-16 relative z-10">
+        <div class="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 shadow-2xl grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <label class="text-[10px] uppercase font-bold text-red-600 mb-2 block tracking-widest">1. Seleccioná Marca</label>
+                <select x-model="marcaSel" @change="updateModels()" class="w-full bg-black border border-zinc-700 p-4 rounded-lg font-bold outline-none focus:border-red-600 text-white">
+                    <option value="">-- MARCA --</option>
+                    <template x-for="m in Object.keys(dataModelos)" :key="m"><option :value="m" x-text="m"></option></template>
+                </select>
+            </div>
+            <div>
+                <label class="text-[10px] uppercase font-bold text-red-600 mb-2 block tracking-widest">2. Seleccioná Modelo</label>
+                <select x-model="modelSel" class="w-full bg-black border border-zinc-700 p-4 rounded-lg font-bold outline-none focus:border-red-600 text-white">
+                    <option value="">-- MODELO --</option>
+                    <template x-for="mod in modelosLista" :key="mod"><option :value="mod" x-text="mod"></option></template>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button @click="document.getElementById('productos').scrollIntoView()" class="w-full bg-red-600 hover:bg-red-700 py-4 rounded-lg font-black uppercase tracking-widest transition shadow-lg shadow-red-600/20">BUSCAR ACCESORIOS</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="py-16 overflow-hidden bg-black opacity-40">
+        <div class="animate-scroll">
+            <div class="flex space-x-24 items-center px-10">
+                <span class="text-2xl font-brand">STEEL TIGER</span><span class="text-2xl font-brand">BRACCO</span><span class="text-2xl font-brand text-red-600">MOPAR</span><span class="text-2xl font-brand">KEKO</span><span class="text-2xl font-brand">K&N</span><span class="text-2xl font-brand italic">CGA</span>
+            </div>
+            <div class="flex space-x-24 items-center px-10">
+                <span class="text-2xl font-brand">STEEL TIGER</span><span class="text-2xl font-brand">BRACCO</span><span class="text-2xl font-brand text-red-600">MOPAR</span><span class="text-2xl font-brand">KEKO</span><span class="text-2xl font-brand">K&N</span><span class="text-2xl font-brand italic">CGA</span>
+            </div>
+        </div>
+    </div>
+
+    <section id="productos" class="py-20 container mx-auto px-4">
+        <div class="flex flex-col md:flex-row justify-between items-baseline mb-12 border-b border-zinc-800 pb-6">
+            <h3 class="text-4xl font-brand italic font-black uppercase">Grupo <span class="text-red-600" x-text="grupoActivo"></span></h3>
+            <div class="flex space-x-2 mt-4 md:mt-0">
+                <template x-for="g in ['Exterior', 'Iluminación', 'Interior']">
+                    <button @click="grupoActivo = g" :class="grupoActivo === g ? 'bg-red-600' : 'bg-zinc-800'" class="px-6 py-2 rounded-full font-bold text-[10px] uppercase tracking-widest transition" x-text="g"></button>
+                </template>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <template x-for="p in listadoProductos.filter(x => x.grupo === grupoActivo)" :key="p.id">
+                <div class="bg-zinc-900 rounded-2xl border border-zinc-800 hover:border-red-600/50 transition p-6 group">
+                    <div class="h-48 bg-zinc-800 rounded-xl mb-6 flex items-center justify-center">
+                        <i class="fas fa-truck-pickup text-5xl text-zinc-700 group-hover:text-red-600 transition"></i>
+                    </div>
+                    <h4 class="font-bold uppercase text-lg mb-1" x-text="p.n"></h4>
+                    <p class="text-gray-500 text-xs mb-4" x-text="p.d"></p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xl font-brand" x-text="'$' + p.v"></span>
+                        <button @click="addCart(p)" class="bg-white text-black p-3 rounded-lg hover:bg-red-600 hover:text-white transition"><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </section>
+
+    <section id="mecanica" class="py-24 bg-zinc-900/30">
+        <div class="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-16">
+            <div class="bg-zinc-900 p-10 rounded-3xl border border-zinc-800 shadow-2xl">
+                <h3 class="text-4xl font-brand font-black italic mb-2 uppercase">CGA <span class="text-red-600 text-2xl italic">MECÁNICA Y SERVICIOS</span></h3>
+                <p class="text-gray-400 mb-8 font-bold text-xs uppercase tracking-[0.2em]">Service Motor & Caja | Especialistas MOPAR</p>
+                <div class="space-y-4">
+                    <input x-model="formMec.patente" type="text" placeholder="PATENTE / MODELO" class="w-full bg-black border border-zinc-800 p-4 rounded-xl focus:border-red-600 outline-none uppercase font-bold text-white">
+                    <textarea x-model="formMec.problema" rows="3" placeholder="¿QUÉ LE SUCEDE A TU VEHÍCULO?" class="w-full bg-black border border-zinc-800 p-4 rounded-xl focus:border-red-600 outline-none text-white"></textarea>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                        <button @click="sendMec('TURNO')" class="bg-red-600 text-white font-black py-4 rounded-xl uppercase text-xs tracking-widest hover:bg-red-700 transition">RESERVAR TURNO</button>
+                        <button @click="sendMec('CONSULTA')" class="bg-zinc-800 text-white font-black py-4 rounded-xl uppercase text-xs tracking-widest hover:bg-zinc-700 transition italic">CONSULTA TÉCNICA</button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-col justify-center text-center md:text-left">
+                <h4 class="text-2xl font-bold uppercase italic border-l-4 border-red-600 pl-4 mb-6">Mecánica Simple y Especializada</h4>
+                <p class="text-gray-400 mb-8">Reparación de repuestos, service oficial y potenciación. Trabajamos con repuestos originales MOPAR para Jeep, Dodge y RAM.</p>
+                <div class="grid grid-cols-2 gap-8">
+                    <div><span class="text-3xl font-brand block italic text-red-600">100%</span><span class="text-[10px] uppercase font-black">Original Mopar</span></div>
+                    <div><span class="text-3xl font-brand block italic text-red-600">ZONA</span><span class="text-[10px] uppercase font-black">Boulogne / San Isidro</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="performance" class="py-24 bg-black">
+        <div class="container mx-auto px-4 text-center">
+            <h3 class="text-4xl font-brand font-black italic mb-12 uppercase tracking-tight">CGA <span class="text-red-600">PERFORMANCE</span></h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-zinc-900/40 p-10 rounded-2xl border border-zinc-900 hover:border-red-600 transition">
+                    <i class="fas fa-microchip text-4xl text-red-600 mb-6"></i>
+                    <h5 class="font-bold text-xl mb-4 italic uppercase tracking-tighter">Chip Tuning</h5>
+                    <p class="text-gray-500 text-sm italic">Reprogramación de ECU para máximo torque y HP.</p>
+                </div>
+                <div class="bg-zinc-900/40 p-10 rounded-2xl border border-zinc-900 hover:border-red-600 transition">
+                    <i class="fas fa-wind text-4xl text-red-600 mb-6"></i>
+                    <h5 class="font-bold text-xl mb-4 italic uppercase tracking-tighter">Admisiones</h5>
+                    <p class="text-gray-500 text-sm italic">Filtros de alto flujo y kits de admisión directa.</p>
+                </div>
+                <div class="bg-zinc-900/40 p-10 rounded-2xl border border-zinc-900 hover:border-red-600 transition">
+                    <i class="fas fa-fire text-4xl text-red-600 mb-6"></i>
+                    <h5 class="font-bold text-xl mb-4 italic uppercase tracking-tighter">Escapes</h5>
+                    <p class="text-gray-500 text-sm italic">Sistemas deportivos completos y colas de escape.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contacto" class="bg-black py-20 border-t-2 border-red-600 text-center md:text-left">
+        <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-16">
+            <div>
+                <h4 class="text-3xl font-brand italic font-black mb-4"><span class="text-red-600 uppercase">CGA</span> Accesorios</h4>
+                <p class="text-gray-500 italic text-sm">Tu camioneta, en manos de especialistas. Equipamiento extremo y service oficial en Boulogne.</p>
+            </div>
+            <div>
+                <h5 class="text-red-600 font-black uppercase text-xs tracking-[0.2em] mb-6">Contacto</h5>
+                <p class="text-sm mb-2 font-bold uppercase tracking-widest">Avelino Rolón 999, San Isidro</p>
+                <p class="text-sm mb-2 text-gray-400 italic">WhatsApp: 11 6845-5581</p>
+                <p class="text-sm text-gray-400 italic font-bold">@cga_accesorios</p>
+            </div>
+            <div>
+                <h5 class="text-red-600 font-black uppercase text-xs tracking-[0.2em] mb-6">Horarios</h5>
+                <p class="text-sm mb-2 italic tracking-widest">LUNES A VIERNES: 08:30 a 18:30</p>
+                <p class="text-sm italic tracking-widest">SÁBADOS: 09:00 a 13:00</p>
+            </div>
+        </div>
+    </footer>
+
+    <div x-show="cartOpen" x-cloak class="fixed inset-0 z-[150]">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="cartOpen = false"></div>
+        <div class="absolute inset-y-0 right-0 max-w-md w-full bg-zinc-900 shadow-2xl flex flex-col p-8 border-l border-zinc-800">
+            <div class="flex justify-between items-center mb-10">
+                <h2 class="text-2xl font-brand italic text-red-600 uppercase italic">TU PEDIDO</h2>
+                <button @click="cartOpen = false" class="text-3xl">&times;</button>
+            </div>
+            <div class="flex-1 overflow-y-auto space-y-6">
+                <template x-for="item in cart" :key="item.id">
+                    <div class="bg-black p-4 rounded-xl border border-zinc-800 flex justify-between items-center">
+                        <div><h4 class="font-bold text-xs uppercase" x-text="item.n"></h4><p class="text-red-600 font-brand text-xs mt-1" x-text="'$' + item.v"></p></div>
+                        <button @click="cart = cart.filter(i => i.id !== item.id)" class="text-zinc-700 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                    </div>
+                </template>
+                <div x-show="cart.length === 0" class="text-center py-20 text-zinc-600 italic uppercase text-xs">Carrito Vacío</div>
+            </div>
+            <div class="pt-8 border-t border-zinc-800">
+                <div class="flex justify-between text-xl font-brand mb-8 italic"><span>TOTAL:</span><span x-text="'$' + calcTotal()"></span></div>
+                <button @click="checkout()" class="w-full bg-red-600 py-5 rounded-xl font-black uppercase tracking-widest hover:bg-red-700 shadow-lg shadow-red-600/20">CONFIRMAR COMPRA</button>
+            </div>
+        </div>
+    </div>
+
+    <a href="https://wa.me/5491168455581" class="fixed bottom-8 right-8 z-[90] bg-green-600 p-5 rounded-full shadow-[0_0_30px_rgba(34,197,94,0.4)] hover:scale-110 transition border-4 border-black/40">
+        <i class="fab fa-whatsapp text-3xl"></i>
+    </a>
+
+    <script>
+        function cgaApp() {
+            return {
+                showPopup: false, cartOpen: false, grupoActivo: 'Exterior', marcaSel: '', modelSel: '',
+                heroImg: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1600&q=80',
+                cart: [], formMec: { patente: '', problema: '' },
+                modelosLista: [],
+                dataModelos: {
+                    'FORD': ['RANGER', 'RANGER RAPTOR', 'F-150 LARIAT', 'F-150 RAPTOR'],
+                    'VW': ['AMAROK', 'SAVEIRO'],
+                    'TOYOTA': ['HILUX'],
+                    'DODGE / RAM': ['RAM 1500', 'RAM 2500', 'RAMPAGE'],
+                    'JEEP': ['WRANGLER', 'GLADIATOR', 'COMPASS', 'RENEGADE'],
+                    'CHEVROLET': ['S10', 'SILVERADO'],
+                    'RENAULT': ['ALASKAN'],
+                    'FIAT': ['TITANO']
+                },
+                listadoProductos: [
+                    { id: 1, grupo: 'Exterior', n: 'Barra Antivuelco Black', d: 'Acero reforzado para Amarok/Hilux/Ranger', v: '480.000' },
+                    { id: 2, grupo: 'Exterior', n: 'Estribos Slider Rock', d: 'Protección lateral Off-Road alta resistencia', v: '320.000' },
+                    { id: 3, grupo: 'Iluminación', n: 'Barra LED 42" Pro', d: '500W gran alcance, carcasa de aluminio', v: '110.000' },
+                    { id: 4, grupo: 'Interior', n: 'Alfombras Termoformadas', d: 'Calce perfecto impermeable (Juego completo)', v: '115.000' }
+                ],
+                init() { setTimeout(() => this.showPopup = true, 3000); },
+                updateModels() {
+                    this.modelosLista = this.dataModelos[this.marcaSel] || [];
+                    const fotos = {
+                        'FORD': 'https://images.unsplash.com/photo-1591461870121-670180905307?auto=format&fit=crop&w=1600',
+                        'VW': 'https://images.unsplash.com/photo-1619623062312-35805f6396e4?auto=format&fit=crop&w=1600',
+                        'TOYOTA': 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=1600',
+                        'DODGE / RAM': 'https://images.unsplash.com/photo-1614200187524-dc4b892acf16?auto=format&fit=crop&w=1600'
+                    };
+                    if(fotos[this.marcaSel]) this.heroImg = fotos[this.marcaSel];
+                },
+                addCart(p) { this.cart.push({...p, id: Date.now()}); this.cartOpen = true; },
+                calcTotal() { return this.cart.reduce((t, p) => t + parseInt(p.v.replace('.','')), 0).toLocaleString('es-AR'); },
+                sendMec(tipo) {
+                    const txt = `Hola CGA Mecánica! Solicitud de ${tipo}. Patente/Chata: ${this.formMec.patente}. Falla: ${this.formMec.problema}`;
+                    window.open(`https://wa.me/5491168455581?text=${encodeURIComponent(txt)}`, '_blank');
+                },
+                checkout() {
+                    let detalle = this.cart.map(i => i.n).join(', ');
+                    const txt = `Hola CGA Accesorios! Confirmación de Pedido: ${detalle}. Total: $${this.calcTotal()}. Mi vehículo: ${this.marcaSel} ${this.modelSel}`;
+                    window.open(`https://wa.me/5491168455581?text=${encodeURIComponent(txt)}`, '_blank');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
